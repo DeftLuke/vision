@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Terminal, ImageIcon, Code2, FileText, Wand2, DraftingCompass, Globe2, ComponentIcon as ReactComponentIcon } from 'lucide-react';
+import { Terminal, ImageIcon, Code2, FileText, Wand2, DraftingCompass, Globe2, ComponentIcon as ReactComponentIcon, ScanText, Bot, Bug, FileCode2 as MarkdownIcon, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,11 @@ export default function Header() {
     { href: '/wireframe-to-code', label: 'Wireframe Coder', icon: DraftingCompass, description: "Sketch to HTML/CSS" },
     { href: '/text-to-website', label: 'Text-to-Website', icon: Globe2, description: "Full website from text" },
     { href: '/text-to-react-component', label: 'Text-to-Component', icon: ReactComponentIcon, description: "Generate React components" },
+    { href: '/image-to-text', label: 'Image-to-Text', icon: ScanText, description: "OCR & Image Captioning" },
+    { href: '/coding-chat', label: 'Coding Chat', icon: Bot, description: "AI Coding Assistant" },
+    { href: '/bug-detector', label: 'Bug Detector', icon: Bug, description: "Find Bugs in Code" },
+    { href: '/markdown-converter', label: 'Markdown to HTML', icon: MarkdownIcon, description: "Convert Markdown to HTML" },
+    { href: '/design-feedback', label: 'Design Feedback', icon: Lightbulb, description: "Get UI/UX Feedback" },
   ];
 
   const allLinks = [...mainNavLinks, ...toolsNavLinks];
@@ -72,16 +77,16 @@ export default function Header() {
                 <ChevronDownIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuContent align="end" className="w-72 max-h-[70vh] overflow-y-auto"> {/* Increased width and added scroll */}
               <DropdownMenuLabel>More AI Tools</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {toolsNavLinks.map((link) => (
                 <DropdownMenuItem key={link.href} asChild className={cn(pathname === link.href && "bg-accent")}>
-                  <Link href={link.href} className="flex items-center gap-2 w-full">
-                    <link.icon className="h-4 w-4 mr-1 text-muted-foreground" />
+                  <Link href={link.href} className="flex items-start gap-2.5 w-full p-2.5"> {/* Adjusted padding and gap */}
+                    <link.icon className="h-5 w-5 mt-0.5 text-muted-foreground flex-shrink-0" /> {/* Adjusted size and alignment */}
                     <div className="flex flex-col">
-                      <span className="font-medium">{link.label}</span>
-                      {/* <span className="text-xs text-muted-foreground">{link.description}</span> */}
+                      <span className="font-medium leading-snug">{link.label}</span>
+                      <span className="text-xs text-muted-foreground leading-tight">{link.description}</span>
                     </div>
                   </Link>
                 </DropdownMenuItem>
@@ -99,7 +104,7 @@ export default function Header() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuContent align="end" className="w-64 max-h-[80vh] overflow-y-auto">
               {allLinks.map((link) => (
                  <DropdownMenuItem key={link.href} asChild className={cn(pathname === link.href && "bg-accent")}>
                   <Link href={link.href} className="flex items-center gap-2 w-full">

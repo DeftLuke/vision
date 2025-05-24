@@ -1,7 +1,8 @@
+
 'use client';
 
-import type { ChangeEvent, DragEvent } from 'react';
-import React, { useState, useRef } from 'react';
+import type { ChangeEvent, DragEvent, ClipboardEvent } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { UploadCloud } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
@@ -16,10 +17,69 @@ export default function ImageUploader({ onImageUpload, isLoading }: ImageUploade
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const processFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File Type",
+        description: `Skipping non-image file: ${file.name}. Please upload PNG, JPG, GIF, or WEBP.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        onImageUpload(file, e.target.result as string);
+      } else {
+        toast({
+          title: "File Read Error",
+          description: `Could not read file: ${file.name}`,
+          variant: "destructive",
+        });
+      }
+    };
+    reader.onerror = () => {
+        toast({
+          title: "File Read Error",
+          description: `Error reading file: ${file.name}`,
+          variant: "destructive",
+        });
+    };
+    reader.readAsDataURL(file);
+  }, [onImageUpload, toast]);
+
+  const processMultipleFiles = useCallback((files: FileList | File[]) => {
+    let imageFound = false;
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith('image/')) {
+        processFile(file);
+        imageFound = true;
+      } else {
+         toast({
+            title: "Invalid File Type",
+            description: `Skipping non-image file: ${file.name}.`,
+            variant: "default",
+          });
+      }
+    });
+    if (!imageFound && files.length > 0) {
+        toast({
+            title: "No Valid Images",
+            description: "No valid image files were found in your selection.",
+            variant: "destructive",
+        });
+    }
+  }, [processFile, toast]);
+
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files && files[0]) {
-      processFile(files[0]);
+    if (files && files.length > 0) {
+      processMultipleFiles(files);
+    }
+    // Reset the input value to allow uploading the same file again
+    if (event.target) {
+        event.target.value = '';
     }
   };
 
@@ -30,33 +90,9 @@ export default function ImageUploader({ onImageUpload, isLoading }: ImageUploade
     if (isLoading) return;
 
     const files = event.dataTransfer.files;
-    if (files && files[0]) {
-      if (files[0].type.startsWith('image/')) {
-        processFile(files[0]);
-      } else {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload an image file.",
-          variant: "destructive",
-        });
-      }
+    if (files && files.length > 0) {
+      processMultipleFiles(files);
     }
-  };
-
-  const processFile = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid File Type",
-        description: "Please upload an image file (e.g., PNG, JPG, GIF).",
-        variant: "destructive",
-      });
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      onImageUpload(file, e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
@@ -77,6 +113,35 @@ export default function ImageUploader({ onImageUpload, isLoading }: ImageUploade
     }
   };
 
+  useEffect(() => {
+    const handlePaste = (event: globalThis.ClipboardEvent) => {
+      if (isLoading) return;
+      const items = event.clipboardData?.items;
+      if (items) {
+        const filesArray: File[] = [];
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+            const file = items[i].getAsFile();
+            if (file) {
+              filesArray.push(file);
+            }
+          }
+        }
+        if (filesArray.length > 0) {
+            processMultipleFiles(filesArray);
+        } else {
+            // Optionally, inform user if paste contained no images
+            // toast({ title: "Paste Info", description: "No images found in pasted content." });
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste as EventListener);
+    return () => {
+      window.removeEventListener('paste', handlePaste as EventListener);
+    };
+  }, [isLoading, processMultipleFiles, toast]);
+
   return (
     <div
       onClick={handleClick}
@@ -91,19 +156,20 @@ export default function ImageUploader({ onImageUpload, isLoading }: ImageUploade
       )}
       role="button"
       tabIndex={0}
-      aria-label="Image upload area"
+      aria-label="Image upload area: drag & drop, click to select, or paste images"
     >
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
         accept="image/*"
+        multiple // Allow multiple file selection
         className="hidden"
         disabled={isLoading}
       />
       <UploadCloud className={cn("w-16 h-16", isDragging ? "text-primary" : "text-muted-foreground")} />
       <p className="text-muted-foreground">
-        {isDragging ? "Drop the image here" : "Drag & drop an image, or click to select"}
+        {isDragging ? "Drop image(s) here" : "Drag & drop, paste, or click to select image(s)"}
       </p>
       <p className="text-xs text-muted-foreground/80">PNG, JPG, GIF, WEBP accepted</p>
     </div>

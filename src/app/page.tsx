@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Terminal, ImageOff, X } from "lucide-react";
+import { Terminal, ImageOff, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface GeneratedCode {
@@ -32,7 +32,7 @@ interface UploadedImageFile {
 export default function VisionCoderPage() {
   const [uploadedImages, setUploadedImages] = useState<UploadedImageFile[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState<string>("Generate a responsive component based on this image. Include HTML and Tailwind CSS.");
+  const [prompt, setPrompt] = useState<string>("Generate advanced Next.js page code using App Router and Tailwind CSS.");
   const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,7 +144,7 @@ export default function VisionCoderPage() {
       <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Left Panel */}
-          <Card className="shadow-xl">
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl">Upload Your UI Design</CardTitle>
               <CardDescription>Drag & drop, paste, or click to upload screenshots of your UI.</CardDescription>
@@ -156,15 +156,15 @@ export default function VisionCoderPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-md font-medium mb-2 text-foreground/80">Your Uploads ({uploadedImages.length}):</h3>
-                    <ScrollArea className="h-44 w-full rounded-md border p-3 bg-muted/30">
+                    <ScrollArea className="h-44 w-full rounded-md border border-border/70 p-3 bg-muted/20">
                       <div className="flex space-x-4 pb-2">
                         {uploadedImages.map((image) => (
                           <div
                             key={image.id}
                             onClick={() => handleSelectImage(image.id)}
                             className={cn(
-                              "w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-primary/70 relative group shadow-sm transition-all duration-150 ease-in-out",
-                              selectedImageId === image.id ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" : "border-muted hover:shadow-md"
+                              "w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-primary/70 relative group shadow-sm hover:shadow-md transition-all duration-150 ease-in-out",
+                              selectedImageId === image.id ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" : "border-muted/50"
                             )}
                             title={`Select ${image.name}. Click again to deselect.`}
                             aria-pressed={selectedImageId === image.id}
@@ -187,7 +187,7 @@ export default function VisionCoderPage() {
                               className="transition-transform group-hover:scale-105"
                               data-ai-hint="thumbnail ui"
                             />
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-white">
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 text-white">
                               <p className="text-xs truncate font-medium">{image.name}</p>
                             </div>
                           </div>
@@ -206,25 +206,26 @@ export default function VisionCoderPage() {
                     </div>
                   )}
                   {!selectedImage && uploadedImages.length > 0 && (
-                     <div className="text-center py-4 text-muted-foreground flex flex-col items-center justify-center">
-                        <ImageOff className="w-12 h-12 mb-2 text-muted-foreground/50" />
-                        <p>No image selected for preview.</p>
-                        <p className="text-sm">Click on an uploaded image above to select it.</p>
+                     <div className="text-center py-4 text-muted-foreground flex flex-col items-center justify-center border border-dashed border-border/50 rounded-md bg-muted/20 min-h-[150px]">
+                        <ImageOff className="w-10 h-10 mb-2 text-muted-foreground/50" />
+                        <p className="font-medium">No image selected.</p>
+                        <p className="text-sm">Click an uploaded image thumbnail to preview and generate code.</p>
                     </div>
                   )}
                 </div>
               )}
                {uploadedImages.length === 0 && (
-                 <div className="text-center py-8 text-muted-foreground flex flex-col items-center justify-center">
-                    <ImageOff className="w-12 h-12 mb-2 text-muted-foreground/50" />
-                    <p>Upload your first image to get started.</p>
+                 <div className="text-center py-8 text-muted-foreground flex flex-col items-center justify-center border border-dashed border-border/50 rounded-md bg-muted/20 min-h-[200px]">
+                    <ImageOff className="w-12 h-12 mb-3 text-muted-foreground/40" />
+                    <p className="font-medium">Upload your first UI image to get started.</p>
+                    <p className="text-sm text-muted-foreground/70">Supports PNG, JPG, GIF, WEBP.</p>
                 </div>
                )}
             </CardContent>
           </Card>
 
           {/* Right Panel */}
-          <Card className="shadow-xl">
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl">Generated Code</CardTitle>
               <CardDescription>Review the AI-generated HTML & Tailwind CSS. Customize with a prompt.</CardDescription>
@@ -235,16 +236,17 @@ export default function VisionCoderPage() {
                 onChange={setPrompt}
                 onSubmit={handleGenerateCode}
                 isLoading={isLoading}
-                disabled={!selectedImage}
+                disabled={!selectedImage || isLoading}
               />
               {isLoading && (
-                <div className="flex flex-col items-center justify-center space-y-2 py-8">
+                <div className="flex flex-col items-center justify-center space-y-2 py-8 min-h-[200px]">
                   <LoadingSpinner size={32} />
                   <p className="text-muted-foreground">Generating code, please wait...</p>
+                  <p className="text-sm text-muted-foreground/70">This may take a few moments.</p>
                 </div>
               )}
               {error && !isLoading && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="min-h-[150px]">
                   <Terminal className="h-4 w-4" />
                   <AlertTitle>Error Generating Code</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
@@ -254,19 +256,27 @@ export default function VisionCoderPage() {
                 <>
                   {generatedCode && selectedImage ? (
                     <CodeDisplay code={generatedCode} />
-                  ) : uploadedImages.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                       <ImageOff className="w-10 h-10 mb-2 mx-auto text-muted-foreground/50" />
-                      <p>Upload an image on the left to get started.</p>
-                    </div>
-                  ) : !selectedImage ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                       <ImageOff className="w-10 h-10 mb-2 mx-auto text-muted-foreground/50" />
-                      <p>Select an image from your uploads to generate code.</p>
-                    </div>
-                  ) : ( // selectedImage is true, but no generatedCode yet
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p>Edit the prompt and click "Generate Code" to see results for the selected image.</p>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground border border-dashed border-border/50 rounded-md bg-muted/20 min-h-[200px] flex flex-col items-center justify-center">
+                       {uploadedImages.length === 0 ? (
+                         <>
+                           <ImageOff className="w-10 h-10 mb-2 mx-auto text-muted-foreground/40" />
+                           <p className="font-medium">Upload an image</p>
+                           <p className="text-sm text-muted-foreground/70">Upload on the left to begin.</p>
+                         </>
+                       ) : !selectedImage ? (
+                         <>
+                           <ImageOff className="w-10 h-10 mb-2 mx-auto text-muted-foreground/40" />
+                           <p className="font-medium">Select an image</p>
+                           <p className="text-sm text-muted-foreground/70">Choose from your uploads.</p>
+                         </>
+                       ) : ( 
+                         <>
+                           <Sparkles className="w-10 h-10 mb-2 mx-auto text-primary/70" />
+                           <p className="font-medium">Ready to Generate</p>
+                           <p className="text-sm text-muted-foreground/70">Edit the prompt and click "Generate Code".</p>
+                         </>
+                       )}
                     </div>
                   )}
                 </>
@@ -275,7 +285,7 @@ export default function VisionCoderPage() {
           </Card>
         </div>
       </main>
-      <footer className="py-4 text-center text-sm text-muted-foreground border-t border-border">
+      <footer className="py-4 text-center text-sm text-muted-foreground border-t border-border/70">
         © {new Date().getFullYear()} VisionCoder. Powered by AI.
       </footer>
     </div>

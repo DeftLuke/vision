@@ -2,79 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --background: 267 47% 91%; /* Light Violet #E8DEF2 */
+    --foreground: 260 10% 20%; /* Dark grayish violet */
+
+    --muted: 267 40% 85%;
+    --muted-foreground: 260 10% 40%;
+
+    --popover: 267 47% 91%;
+    --popover-foreground: 260 10% 20%;
+
+    --card: 267 47% 93%; /* Slightly lighter than background for cards */
+    --card-foreground: 260 10% 20%;
+
+    --border: 267 30% 80%;
+    --input: 267 30% 85%;
+
+    --primary: 260 50% 50%; /* Deep Violet #6C4AB6 */
+    --primary-foreground: 260 50% 95%; /* Light color for text on primary */
+
+    --secondary: 267 40% 80%; /* A lighter shade of violet for secondary elements */
+    --secondary-foreground: 260 30% 30%;
+
+    --accent: 247 39% 47%; /* Blue Violet #4A3F96 */
+    --accent-foreground: 247 39% 95%; /* Light color for text on accent */
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+
+    --ring: 260 50% 50%; /* Use primary color for ring */
+    --radius: 0.5rem;
+
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Sidebar variables - kept from original theme but might not be heavily used in this single-page app */
+    --sidebar-background: 260 20% 96%; /* Adjusted for theme */
+    --sidebar-foreground: 260 10% 25%;
+    --sidebar-primary: 260 50% 50%;
+    --sidebar-primary-foreground: 260 50% 95%;
+    --sidebar-accent: 247 39% 85%;
+    --sidebar-accent-foreground: 247 39% 20%;
+    --sidebar-border: 260 20% 88%;
+    --sidebar-ring: 260 50% 50%;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 260 15% 10%; 
+    --foreground: 267 30% 90%; 
+
+    --muted: 260 15% 20%;
+    --muted-foreground: 267 30% 70%;
+
+    --popover: 260 15% 10%;
+    --popover-foreground: 267 30% 90%;
+
+    --card: 260 15% 12%;
+    --card-foreground: 267 30% 90%;
+
+    --border: 260 15% 25%;
+    --input: 260 15% 22%;
+
+    --primary: 260 50% 60%; 
+    --primary-foreground: 260 10% 15%;
+
+    --secondary: 260 15% 25%;
+    --secondary-foreground: 267 30% 90%;
+
+    --accent: 247 39% 57%; 
+    --accent-foreground: 260 10% 15%;
+
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+
+    --ring: 260 50% 60%;
+    
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --sidebar-background: 260 15% 8%;
+    --sidebar-foreground: 267 30% 85%;
+    --sidebar-primary: 260 50% 60%;
+    --sidebar-primary-foreground: 260 10% 15%;
+    --sidebar-accent: 247 39% 25%;
+    --sidebar-accent-foreground: 247 39% 85%;
+    --sidebar-border: 260 15% 20%;
+    --sidebar-ring: 260 50% 60%;
   }
 }
 
@@ -84,5 +104,15 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-geist-sans);
   }
+  
+  /* Basic styles for syntax highlighting if using simple span approach */
+  .syntax-highlight-tag { @apply text-primary; }
+  .syntax-highlight-attr { @apply text-accent; }
+  .syntax-highlight-string { @apply text-green-600 dark:text-green-400; }
+  .syntax-highlight-comment { @apply text-muted-foreground italic; }
+  .syntax-highlight-keyword { @apply text-primary; }
+  .syntax-highlight-property { @apply text-accent; }
+  .syntax-highlight-selector { @apply text-primary; }
 }

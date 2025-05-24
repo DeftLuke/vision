@@ -1,6 +1,8 @@
+
 'use client';
 
-import React, { useState, type DragEvent } from "react";
+import React, { useState, useMemo, type DragEvent } from "react";
+import Image from 'next/image';
 import Header from "@/components/layout/Header";
 import ImageUploader from "@/components/vision-coder/ImageUploader";
 import ImagePreview from "@/components/vision-coder/ImagePreview";
@@ -9,10 +11,10 @@ import CodeDisplay from "@/components/vision-coder/CodeDisplay";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { readFileAsDataURI } from "@/lib/image-utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Terminal } from "lucide-react";
-
+import { cn } from "@/lib/utils";
 
 interface GeneratedCode {
   html: string;
@@ -20,25 +22,47 @@ interface GeneratedCode {
   javaScript?: string;
 }
 
+interface UploadedImageFile {
+  id: string;
+  dataUri: string;
+  name: string;
+}
+
 export default function VisionCoderPage() {
-  const [uploadedImageURI, setUploadedImageURI] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImageFile[]>([]);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [prompt, setPrompt] = useState<string>("Generate a responsive component based on this image. Include HTML and Tailwind CSS.");
   const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const selectedImage = useMemo(() => {
+    return uploadedImages.find(img => img.id === selectedImageId);
+  }, [uploadedImages, selectedImageId]);
+
   const handleImageUpload = (file: File, dataUri: string) => {
-    setUploadedImageURI(dataUri);
+    const newImageId = `${Date.now()}-${file.name}-${Math.random().toString(36).substring(2, 7)}`;
+    const newImage: UploadedImageFile = { id: newImageId, dataUri, name: file.name };
+    
+    setUploadedImages(prevImages => [...prevImages, newImage]);
+    setSelectedImageId(newImageId); // Auto-select the newly uploaded image
+
     setGeneratedCode(null); // Clear previous code
     setError(null); // Clear previous error
   };
 
+  const handleSelectImage = (imageId: string) => {
+    setSelectedImageId(imageId);
+    setGeneratedCode(null); // Clear code when selection changes
+    setError(null);
+  };
+
   const handleGenerateCode = async () => {
-    if (!uploadedImageURI) {
+    if (!selectedImage) {
       toast({
-        title: "No Image Uploaded",
-        description: "Please upload an image first.",
+        title: "No Image Selected",
+        description: "Please upload and select an image first.",
         variant: "destructive",
       });
       return;
@@ -60,7 +84,7 @@ export default function VisionCoderPage() {
       const response = await fetch('/api/generate-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoDataUri: uploadedImageURI, prompt }),
+        body: JSON.stringify({ photoDataUri: selectedImage.dataUri, prompt }),
       });
 
       if (!response.ok) {
@@ -100,11 +124,55 @@ export default function VisionCoderPage() {
           <Card className="shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl">Upload Your UI Design</CardTitle>
-              <CardDescription>Drag & drop or click to upload a screenshot of your UI.</CardDescription>
+              <CardDescription>Drag & drop, paste, or click to upload screenshots of your UI.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <ImageUploader onImageUpload={handleImageUpload} isLoading={isLoading} />
-              {uploadedImageURI && <ImagePreview src={uploadedImageURI} alt="Uploaded UI design" />}
+              
+              {uploadedImages.length > 0 && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-md font-medium mb-2 text-foreground/80">Your Uploads ({uploadedImages.length}):</h3>
+                    <ScrollArea className="h-44 w-full rounded-md border p-3 bg-muted/30">
+                      <div className="flex space-x-4 pb-2">
+                        {uploadedImages.map((image) => (
+                          <div
+                            key={image.id}
+                            onClick={() => handleSelectImage(image.id)}
+                            className={cn(
+                              "w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-primary/70 relative group shadow-sm transition-all duration-150 ease-in-out",
+                              selectedImageId === image.id ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" : "border-muted hover:shadow-md"
+                            )}
+                            title={`Select ${image.name}`}
+                          >
+                            <Image
+                              src={image.dataUri}
+                              alt={image.name}
+                              layout="fill"
+                              objectFit="cover"
+                              className="transition-transform group-hover:scale-105"
+                              data-ai-hint="thumbnail ui"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-white">
+                              <p className="text-xs truncate font-medium">{image.name}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                  
+                  {selectedImage && (
+                    <div>
+                      <h3 className="text-md font-medium mb-2 text-foreground/80">Preview for Generation:</h3>
+                      <ImagePreview 
+                        src={selectedImage.dataUri} 
+                        alt={`Preview: ${selectedImage.name}`} 
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -134,12 +202,17 @@ export default function VisionCoderPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              {!isLoading && generatedCode && (
+              {!isLoading && generatedCode && selectedImage && (
                 <CodeDisplay code={generatedCode} />
               )}
-              {!isLoading && !generatedCode && !error && (
+              {!isLoading && !selectedImage && !error && (
                  <div className="text-center py-8 text-muted-foreground">
-                    <p>Upload an image and provide a prompt to see the generated code here.</p>
+                    <p>Upload an image to get started.</p>
+                 </div>
+              )}
+              {!isLoading && selectedImage && !generatedCode && !error && (
+                 <div className="text-center py-8 text-muted-foreground">
+                    <p>Edit the prompt and click "Generate Code" to see results for the selected image.</p>
                  </div>
               )}
             </CardContent>

@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Terminal } from "lucide-react";
+import { Terminal, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface GeneratedCode {
@@ -53,9 +53,16 @@ export default function VisionCoderPage() {
   };
 
   const handleSelectImage = (imageId: string) => {
-    setSelectedImageId(imageId);
-    setGeneratedCode(null); // Clear code when selection changes
-    setError(null);
+    if (selectedImageId === imageId) {
+      // Deselect if the same image is clicked again
+      setSelectedImageId(null);
+      setGeneratedCode(null);
+      setError(null);
+    } else {
+      setSelectedImageId(imageId);
+      setGeneratedCode(null); // Clear code when selection changes
+      setError(null);
+    }
   };
 
   const handleGenerateCode = async () => {
@@ -143,7 +150,8 @@ export default function VisionCoderPage() {
                               "w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-primary/70 relative group shadow-sm transition-all duration-150 ease-in-out",
                               selectedImageId === image.id ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" : "border-muted hover:shadow-md"
                             )}
-                            title={`Select ${image.name}`}
+                            title={`Select ${image.name}. Click again to deselect.`}
+                            aria-pressed={selectedImageId === image.id}
                           >
                             <Image
                               src={image.dataUri}
@@ -169,6 +177,13 @@ export default function VisionCoderPage() {
                         src={selectedImage.dataUri} 
                         alt={`Preview: ${selectedImage.name}`} 
                       />
+                    </div>
+                  )}
+                  {!selectedImage && uploadedImages.length > 0 && (
+                     <div className="text-center py-4 text-muted-foreground flex flex-col items-center justify-center">
+                        <ImageOff className="w-12 h-12 mb-2 text-muted-foreground/50" />
+                        <p>No image selected for preview.</p>
+                        <p className="text-sm">Click on an uploaded image above to select it.</p>
                     </div>
                   )}
                 </div>
@@ -202,18 +217,25 @@ export default function VisionCoderPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              {!isLoading && generatedCode && selectedImage && (
-                <CodeDisplay code={generatedCode} />
-              )}
-              {!isLoading && !selectedImage && !error && (
-                 <div className="text-center py-8 text-muted-foreground">
-                    <p>Upload an image to get started.</p>
-                 </div>
-              )}
-              {!isLoading && selectedImage && !generatedCode && !error && (
-                 <div className="text-center py-8 text-muted-foreground">
-                    <p>Edit the prompt and click "Generate Code" to see results for the selected image.</p>
-                 </div>
+              {!isLoading && !error && (
+                <>
+                  {generatedCode && selectedImage ? (
+                    <CodeDisplay code={generatedCode} />
+                  ) : uploadedImages.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>Upload an image to get started.</p>
+                    </div>
+                  ) : !selectedImage ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                       <ImageOff className="w-10 h-10 mb-2 mx-auto text-muted-foreground/50" />
+                      <p>Select an image from your uploads to generate code.</p>
+                    </div>
+                  ) : ( // selectedImage is true, but no generatedCode yet
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>Edit the prompt and click "Generate Code" to see results for the selected image.</p>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

@@ -168,6 +168,9 @@ export default function VisionCoderPage() {
                             )}
                             title={`Select ${image.name}. Click again to deselect.`}
                             aria-pressed={selectedImageId === image.id}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSelectImage(image.id); }}
                           >
                             <Button
                               variant="ghost"
@@ -286,7 +289,7 @@ export default function VisionCoderPage() {
         </div>
       </main>
       <footer className="py-4 text-center text-sm text-muted-foreground border-t border-border/70">
-        © {new Date().getFullYear()} VisionCoder. Powered by AI.
+        © {new Date().getFullYear()} AI Studio. Powered by AI.
       </footer>
     </div>
   );

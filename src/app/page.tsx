@@ -32,7 +32,7 @@ interface UploadedImageFile {
 export default function VisionCoderPage() {
   const [uploadedImages, setUploadedImages] = useState<UploadedImageFile[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState<string>("Generate advanced Next.js page code using App Router and Tailwind CSS.");
+  const [prompt, setPrompt] = useState<string>("Generate advanced Next.js page code using Pages Router and Tailwind CSS.");
   const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

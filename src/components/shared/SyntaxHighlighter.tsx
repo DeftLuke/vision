@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { cn } from '@/lib/utils';
@@ -58,7 +59,7 @@ const SyntaxHighlighter: React.FC<SyntaxHighlighterProps> = ({ code, language, c
   return (
     <pre
       className={cn(
-        "p-4 rounded-md bg-secondary text-secondary-foreground overflow-auto text-sm max-h-[400px] min-h-[200px]",
+        "p-4 rounded-md bg-secondary text-secondary-foreground overflow-auto text-sm max-h-[500px] min-h-[200px]",
         "font-mono",
         className
       )}

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo, type DragEvent } from "react";
+import React, { useState, useMemo, type DragEvent, type MouseEvent } from "react";
 import Image from 'next/image';
 import Header from "@/components/layout/Header";
 import ImageUploader from "@/components/vision-coder/ImageUploader";
@@ -12,8 +12,9 @@ import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Terminal, ImageOff } from "lucide-react";
+import { Terminal, ImageOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface GeneratedCode {
@@ -63,6 +64,21 @@ export default function VisionCoderPage() {
       setGeneratedCode(null); // Clear code when selection changes
       setError(null);
     }
+  };
+
+  const handleDeleteImage = (imageIdToDelete: string, event: MouseEvent) => {
+    event.stopPropagation(); // Prevent triggering handleSelectImage
+
+    setUploadedImages(prevImages => prevImages.filter(img => img.id !== imageIdToDelete));
+    if (selectedImageId === imageIdToDelete) {
+      setSelectedImageId(null);
+      setGeneratedCode(null);
+      setError(null);
+    }
+    toast({
+      title: "Image Deleted",
+      description: "The image has been removed from the list.",
+    });
   };
 
   const handleGenerateCode = async () => {
@@ -153,6 +169,16 @@ export default function VisionCoderPage() {
                             title={`Select ${image.name}. Click again to deselect.`}
                             aria-pressed={selectedImageId === image.id}
                           >
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 h-6 w-6 z-20 text-muted-foreground hover:text-destructive-foreground hover:bg-destructive/80 opacity-60 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => handleDeleteImage(image.id, e)}
+                              aria-label={`Delete image ${image.name}`}
+                              title={`Delete ${image.name}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                             <Image
                               src={image.dataUri}
                               alt={image.name}
@@ -188,6 +214,12 @@ export default function VisionCoderPage() {
                   )}
                 </div>
               )}
+               {uploadedImages.length === 0 && (
+                 <div className="text-center py-8 text-muted-foreground flex flex-col items-center justify-center">
+                    <ImageOff className="w-12 h-12 mb-2 text-muted-foreground/50" />
+                    <p>Upload your first image to get started.</p>
+                </div>
+               )}
             </CardContent>
           </Card>
 
@@ -203,6 +235,7 @@ export default function VisionCoderPage() {
                 onChange={setPrompt}
                 onSubmit={handleGenerateCode}
                 isLoading={isLoading}
+                disabled={!selectedImage}
               />
               {isLoading && (
                 <div className="flex flex-col items-center justify-center space-y-2 py-8">
@@ -223,7 +256,8 @@ export default function VisionCoderPage() {
                     <CodeDisplay code={generatedCode} />
                   ) : uploadedImages.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      <p>Upload an image to get started.</p>
+                       <ImageOff className="w-10 h-10 mb-2 mx-auto text-muted-foreground/50" />
+                      <p>Upload an image on the left to get started.</p>
                     </div>
                   ) : !selectedImage ? (
                     <div className="text-center py-8 text-muted-foreground">

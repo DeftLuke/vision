@@ -77,6 +77,7 @@ export default function TextToImagePage() {
     if (!generatedImage) return;
     const link = document.createElement('a');
     link.href = generatedImage;
+    // Create a filename-safe version of the prompt
     const filenameSafePrompt = prompt.substring(0, 30).replace(/[^a-z0-9]/gi, '_').toLowerCase();
     link.download = `generated_image_${filenameSafePrompt || Date.now()}.png`;
     document.body.appendChild(link);

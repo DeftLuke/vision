@@ -40,7 +40,15 @@ export default function CodeDisplay({ code }: CodeDisplayProps) {
   };
 
   const iframeSrcDoc = useMemo(() => {
-    if (!code || !code.html || !code.tailwindCss) return '';
+    if (!code || !code.html) return '';
+    // Tailwind CSS via CDN
+    const tailwindCDN = '<script src="https://cdn.tailwindcss.com"><\/script>';
+    // Custom CSS provided by the AI. This might be empty.
+    const customCSSBlock = code.tailwindCss ? `<style>\n${code.tailwindCss}\n<\/style>` : '';
+    // JavaScript provided by the AI. This might be empty.
+    // Using type="module" for modern JS, but might not be strictly necessary for all AI outputs.
+    const customJSBlock = code.javaScript ? `<script type="module">\n${code.javaScript}\n<\/script>` : '';
+
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -48,13 +56,16 @@ export default function CodeDisplay({ code }: CodeDisplayProps) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Preview</title>
+        ${tailwindCDN}
         <style>
-          body { margin: 0; font-family: sans-serif; background-color: #fff; }
-          ${code.tailwindCss}
+          /* Basic reset and body styles */
+          body { margin: 0; font-family: sans-serif; }
         </style>
+        ${customCSSBlock}
       </head>
       <body>
-        ${code.html}
+        <div id="app-root">${code.html}</div>
+        ${customJSBlock}
       </body>
       </html>
     `;
@@ -69,8 +80,8 @@ export default function CodeDisplay({ code }: CodeDisplayProps) {
         variant="ghost"
         size="icon"
         className={cn(
-          "absolute z-20", // z-20 to be above tabs list if it overlaps
-          isFullscreen ? "top-4 right-4 h-8 w-8" : "top-[-8px] right-[-8px] h-7 w-7" // Adjust if CodeDisplay is directly in CardContent (p-6 pt-0)
+          "absolute z-20", 
+          isFullscreen ? "top-4 right-4 h-8 w-8" : "top-[-8px] right-[-8px] h-7 w-7"
         )}
         onClick={() => setIsFullscreen(!isFullscreen)}
         aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
@@ -82,23 +93,23 @@ export default function CodeDisplay({ code }: CodeDisplayProps) {
       <Tabs defaultValue="html" className={cn("w-full", isFullscreen && "flex-1 flex flex-col mt-2")}>
         <TabsList className={cn(
           "grid w-full",
-          code.javaScript ? "grid-cols-4" : "grid-cols-3", // Adjust grid based on JS presence
+          code.javaScript ? "grid-cols-4" : "grid-cols-3", 
           isFullscreen && "shrink-0"
         )}>
           <TabsTrigger value="html" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">
             <FileText className="mr-2 h-4 w-4" /> HTML
           </TabsTrigger>
           <TabsTrigger value="css" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <Palette className="mr-2 h-4 w-4" /> Tailwind CSS
+            <Palette className="mr-2 h-4 w-4" /> CSS
           </TabsTrigger>
           <TabsTrigger value="preview" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">
             <Eye className="mr-2 h-4 w-4" /> Preview
           </TabsTrigger>
-          {/* {code.javaScript && (
+          {code.javaScript && (
             <TabsTrigger value="js" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">
               <Braces className="mr-2 h-4 w-4" /> JavaScript
             </TabsTrigger>
-          )} */}
+          )}
         </TabsList>
 
         <TabsContent value="html" className={cn("mt-2", isFullscreen && "flex-1 overflow-hidden")}>
@@ -137,13 +148,13 @@ export default function CodeDisplay({ code }: CodeDisplayProps) {
             title="Code Preview"
             className={cn(
               "w-full border rounded-md bg-white",
-              isFullscreen ? "h-full" : "h-[500px] min-h-[300px]" // Adjusted normal height
+              isFullscreen ? "h-full" : "h-[500px] min-h-[300px]"
             )}
-            // sandbox="allow-scripts" // Add if JS execution in preview is desired and safe
+            sandbox="allow-scripts allow-same-origin" // Allow scripts for JS and same-origin for potential local resources
           />
         </TabsContent>
 
-        {/* {code.javaScript && (
+        {code.javaScript && (
           <TabsContent value="js" className={cn("mt-2", isFullscreen && "flex-1 overflow-hidden")}>
             <div className={cn("relative", isFullscreen && "h-full")}>
               <Button
@@ -158,7 +169,7 @@ export default function CodeDisplay({ code }: CodeDisplayProps) {
               <SyntaxHighlighter code={code.javaScript} language="javascript" className={cn(isFullscreen && "h-full w-full overflow-auto")} />
             </div>
           </TabsContent>
-        )} */}
+        )}
       </Tabs>
     </div>
   );

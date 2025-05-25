@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Terminal, ImageIcon, Code2, FileText, Wand2, DraftingCompass, Globe2, ComponentIcon as ReactComponentIcon, ScanText, Bot, Bug, FileCode2 as MarkdownIcon, Lightbulb } from 'lucide-react';
+import { Terminal, ImageIcon, Code2, FileText, Wand2, DraftingCompass, Globe2, ComponentIcon as ReactComponentIcon, ScanText, Bot, Bug, FileCode2 as MarkdownIcon, Lightbulb, Layers, ServerCog } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
 import { Button } from '../ui/button';
 import { Menu } from 'lucide-react';
@@ -25,7 +26,7 @@ export default function Header() {
     { href: '/text-to-image', label: 'Text-to-Image', icon: ImageIcon, description: "Generate images from text" },
   ];
 
-  const toolsNavLinks = [
+  const devToolsLinks = [
     { href: '/code-explainer', label: 'Code Explainer', icon: FileText, description: "Understand code snippets" },
     { href: '/code-optimizer', label: 'Code Optimizer', icon: Wand2, description: "Refactor & improve code" },
     { href: '/wireframe-to-code', label: 'Wireframe Coder', icon: DraftingCompass, description: "Sketch to HTML/CSS" },
@@ -38,7 +39,44 @@ export default function Header() {
     { href: '/design-feedback', label: 'Design Feedback', icon: Lightbulb, description: "Get UI/UX Feedback" },
   ];
 
-  const allLinks = [...mainNavLinks, ...toolsNavLinks];
+  const proToolsLinks = [
+    { href: '/figma-to-code', label: 'Figma to Code', icon: Layers, description: "Convert Figma to React/HTML" },
+    { href: '/natural-language-api-builder', label: 'NL API Builder', icon: ServerCog, description: "Create APIs from text" },
+    // Add more pro tools here as they are implemented
+  ];
+
+  const allLinks = [...mainNavLinks, ...devToolsLinks, ...proToolsLinks];
+
+  const createDropdownMenuItem = (link: typeof mainNavLinks[0]) => (
+    <DropdownMenuItem key={link.href} asChild className={cn(pathname === link.href && "bg-accent focus:bg-accent")}>
+      <Link href={link.href} className="flex items-start gap-2.5 w-full p-2.5">
+        <link.icon className="h-5 w-5 mt-0.5 text-muted-foreground flex-shrink-0" />
+        <div className="flex flex-col">
+          <span className="font-medium leading-snug">{link.label}</span>
+          {link.description && <span className="text-xs text-muted-foreground leading-tight">{link.description}</span>}
+        </div>
+      </Link>
+    </DropdownMenuItem>
+  );
+  
+  const createDesktopNavLink = (link: typeof mainNavLinks[0]) => (
+     <Link
+        key={link.href}
+        href={link.href}
+        className={cn(
+          "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+          "hover:bg-accent hover:text-accent-foreground",
+          pathname === link.href
+            ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+        aria-current={pathname === link.href ? "page" : undefined}
+      >
+        <link.icon className="h-4 w-4" />
+        <span>{link.label}</span>
+      </Link>
+  );
+
 
   return (
     <header className="py-3 px-4 sm:px-6 bg-card border-b border-border/70 shadow-sm sticky top-0 z-40">
@@ -50,47 +88,43 @@ export default function Header() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          {mainNavLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                "hover:bg-accent hover:text-accent-foreground",
-                pathname === link.href
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              aria-current={pathname === link.href ? "page" : undefined}
-            >
-              <link.icon className="h-4 w-4" />
-              <span>{link.label}</span>
-            </Link>
-          ))}
+          {mainNavLinks.map(createDesktopNavLink)}
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground",
-                toolsNavLinks.some(l => pathname === l.href) && "bg-primary/10 text-primary"
+                devToolsLinks.some(l => pathname === l.href) && "bg-primary/10 text-primary"
               )}>
-                Developer Tools
+                Dev Tools
                 <ChevronDownIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72 max-h-[70vh] overflow-y-auto"> {/* Increased width and added scroll */}
-              <DropdownMenuLabel>More AI Tools</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-72 max-h-[70vh] overflow-y-auto pretty-scrollbar">
+              <DropdownMenuLabel>Developer Utilities</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {toolsNavLinks.map((link) => (
-                <DropdownMenuItem key={link.href} asChild className={cn(pathname === link.href && "bg-accent")}>
-                  <Link href={link.href} className="flex items-start gap-2.5 w-full p-2.5"> {/* Adjusted padding and gap */}
-                    <link.icon className="h-5 w-5 mt-0.5 text-muted-foreground flex-shrink-0" /> {/* Adjusted size and alignment */}
-                    <div className="flex flex-col">
-                      <span className="font-medium leading-snug">{link.label}</span>
-                      <span className="text-xs text-muted-foreground leading-tight">{link.description}</span>
-                    </div>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuGroup>
+                {devToolsLinks.map(createDropdownMenuItem)}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground",
+                 proToolsLinks.some(l => pathname === l.href) && "bg-primary/10 text-primary"
+              )}>
+                Pro Tools
+                <ChevronDownIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72 max-h-[70vh] overflow-y-auto pretty-scrollbar">
+              <DropdownMenuLabel>Advanced Features</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+               <DropdownMenuGroup>
+                {proToolsLinks.map(createDropdownMenuItem)}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
@@ -104,15 +138,42 @@ export default function Header() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 max-h-[80vh] overflow-y-auto">
-              {allLinks.map((link) => (
-                 <DropdownMenuItem key={link.href} asChild className={cn(pathname === link.href && "bg-accent")}>
-                  <Link href={link.href} className="flex items-center gap-2 w-full">
-                    <link.icon className="h-4 w-4 mr-1 text-muted-foreground" />
-                     <span>{link.label}</span>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuContent align="end" className="w-64 max-h-[80vh] overflow-y-auto pretty-scrollbar">
+               <DropdownMenuGroup>
+                <DropdownMenuLabel>Main</DropdownMenuLabel>
+                {mainNavLinks.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild className={cn(pathname === link.href && "bg-accent")}>
+                    <Link href={link.href} className="flex items-center gap-2 w-full">
+                      <link.icon className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <span>{link.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Developer Tools</DropdownMenuLabel>
+                {devToolsLinks.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild className={cn(pathname === link.href && "bg-accent")}>
+                    <Link href={link.href} className="flex items-center gap-2 w-full">
+                      <link.icon className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <span>{link.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Pro Tools</DropdownMenuLabel>
+                 {proToolsLinks.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild className={cn(pathname === link.href && "bg-accent")}>
+                    <Link href={link.href} className="flex items-center gap-2 w-full">
+                      <link.icon className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <span>{link.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -138,4 +199,29 @@ function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="m6 9 6 6 6-6" />
     </svg>
   )
+}
+
+// Helper for pretty scrollbars in dropdowns
+const styles = `
+  .pretty-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .pretty-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.5);
+    border-radius: 10px;
+  }
+  .pretty-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 10px;
+  }
+  .pretty-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.7);
+  }
+`;
+if (typeof window !== 'undefined') {
+  const styleSheet = document.createElement("style");
+  styleSheet.type = "text/css";
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
 }

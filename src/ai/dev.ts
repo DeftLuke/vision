@@ -16,3 +16,5 @@ import '@/ai/flows/coding-chat-flow.ts';
 import '@/ai/flows/bug-detector-flow.ts';
 import '@/ai/flows/markdown-to-html-flow.ts';
 import '@/ai/flows/design-feedback-flow.ts';
+import '@/ai/flows/figma-to-code-flow.ts';
+import '@/ai/flows/natural-language-api-flow.ts';

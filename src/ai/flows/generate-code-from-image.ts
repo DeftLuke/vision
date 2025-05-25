@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI agent that generates HTML and Tailwind CSS code from an image of a UI.
@@ -17,6 +18,8 @@ const GenerateCodeFromImageInputSchema = z.object({
       "A photo of a UI, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   prompt: z.string().describe('The prompt to customize code generation.'),
+  width: z.number().optional().describe('Optional target width in pixels for the generated UI component/page.'),
+  height: z.number().optional().describe('Optional target height in pixels for the generated UI component/page.'),
 });
 export type GenerateCodeFromImageInput = z.infer<typeof GenerateCodeFromImageInputSchema>;
 
@@ -35,15 +38,27 @@ const generateCodeFromImagePrompt = ai.definePrompt({
   name: 'generateCodeFromImagePrompt',
   input: {schema: GenerateCodeFromImageInputSchema},
   output: {schema: GenerateCodeFromImageOutputSchema},
-  prompt: `You are an expert frontend developer specializing in converting UI designs into clean, production-ready code using HTML and Tailwind CSS.
+  prompt: `You are an expert frontend developer specializing in converting UI designs into clean, production-ready, responsive code using HTML and Tailwind CSS.
 
-You will receive a UI image and a prompt to customize the code generation.
-Based on the image and the prompt, you will generate the corresponding HTML structure, Tailwind CSS classes, and any necessary JavaScript code for interactions.
+You will receive a UI image, a customization prompt, and optional target dimensions.
+Based on the image and the prompt, generate the corresponding HTML structure, Tailwind CSS classes, and any necessary JavaScript code for interactions.
 
-Ensure the generated code is well-structured, semantic, and follows best practices for web development.
+IMPORTANT:
+- The generated code MUST be responsive and mobile-first. It should look good on all screen sizes, from small mobile devices to large desktops.
+- Use Tailwind CSS utility classes extensively for all styling. Avoid custom CSS in <style> tags unless absolutely necessary for complex scenarios not covered by Tailwind.
+{{#if width}}
+- The user has suggested a target width of approximately {{{width}}}px. This dimension should be considered for a typical desktop viewport, but ensure the design scales gracefully for smaller and larger screens.
+{{/if}}
+{{#if height}}
+- The user has suggested a target height of approximately {{{height}}}px. This dimension should be considered for a typical desktop viewport, but ensure the design scales gracefully.
+{{/if}}
+- Ensure the generated code is well-structured, semantic, and follows best practices for web development.
+- Prioritize creating a layout that adapts fluidly to different screen sizes. Use responsive Tailwind prefixes (sm:, md:, lg:, xl:) as needed.
 
 UI Image: {{media url=photoDataUri}}
-Prompt: {{{prompt}}}
+Customization Prompt: {{{prompt}}}
+{{#if width}}Target Width: ~{{{width}}}px (for desktop, ensure responsive){{/if}}
+{{#if height}}Target Height: ~{{{height}}}px (for desktop, ensure responsive){{/if}}
 
 Output the HTML, Tailwind CSS, and JavaScript code snippets separately.
 

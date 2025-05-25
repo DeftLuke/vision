@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Terminal, ImageOff, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,7 +34,9 @@ interface UploadedImageFile {
 export default function VisionCoderPage() {
   const [uploadedImages, setUploadedImages] = useState<UploadedImageFile[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState<string>("Generate advanced Next.js page code using Pages Router and Tailwind CSS.");
+  const [prompt, setPrompt] = useState<string>("Generate advanced Next.js page code using Pages Router and Tailwind CSS. Ensure the design is responsive and mobile-first.");
+  const [customWidth, setCustomWidth] = useState<string>("");
+  const [customHeight, setCustomHeight] = useState<string>("");
   const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,27 +51,26 @@ export default function VisionCoderPage() {
     const newImage: UploadedImageFile = { id: newImageId, dataUri, name: file.name };
     
     setUploadedImages(prevImages => [...prevImages, newImage]);
-    setSelectedImageId(newImageId); // Auto-select the newly uploaded image
+    setSelectedImageId(newImageId); 
 
-    setGeneratedCode(null); // Clear previous code
-    setError(null); // Clear previous error
+    setGeneratedCode(null); 
+    setError(null); 
   };
 
   const handleSelectImage = (imageId: string) => {
     if (selectedImageId === imageId) {
-      // Deselect if the same image is clicked again
       setSelectedImageId(null);
       setGeneratedCode(null);
       setError(null);
     } else {
       setSelectedImageId(imageId);
-      setGeneratedCode(null); // Clear code when selection changes
+      setGeneratedCode(null); 
       setError(null);
     }
   };
 
   const handleDeleteImage = (imageIdToDelete: string, event: MouseEvent) => {
-    event.stopPropagation(); // Prevent triggering handleSelectImage
+    event.stopPropagation(); 
 
     setUploadedImages(prevImages => prevImages.filter(img => img.id !== imageIdToDelete));
     if (selectedImageId === imageIdToDelete) {
@@ -103,11 +106,22 @@ export default function VisionCoderPage() {
     setError(null);
     setGeneratedCode(null);
 
+    const payload: any = { 
+      photoDataUri: selectedImage.dataUri, 
+      prompt 
+    };
+    if (customWidth && !isNaN(parseInt(customWidth))) {
+      payload.width = parseInt(customWidth);
+    }
+    if (customHeight && !isNaN(parseInt(customHeight))) {
+      payload.height = parseInt(customHeight);
+    }
+
     try {
       const response = await fetch('/api/generate-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoDataUri: selectedImage.dataUri, prompt }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -231,7 +245,7 @@ export default function VisionCoderPage() {
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl">Generated Code</CardTitle>
-              <CardDescription>Review the AI-generated HTML & Tailwind CSS. Customize with a prompt.</CardDescription>
+              <CardDescription>Review the AI-generated HTML & Tailwind CSS. Customize with a prompt and optional dimensions.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <PromptInput
@@ -241,6 +255,32 @@ export default function VisionCoderPage() {
                 isLoading={isLoading}
                 disabled={!selectedImage || isLoading}
               />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="custom-width" className="text-sm font-medium">Target Width (px)</Label>
+                  <Input 
+                    id="custom-width"
+                    type="number"
+                    placeholder="e.g., 1280"
+                    value={customWidth}
+                    onChange={(e) => setCustomWidth(e.target.value)}
+                    disabled={isLoading || !selectedImage}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="custom-height" className="text-sm font-medium">Target Height (px)</Label>
+                  <Input
+                    id="custom-height"
+                    type="number"
+                    placeholder="e.g., 720"
+                    value={customHeight}
+                    onChange={(e) => setCustomHeight(e.target.value)}
+                    disabled={isLoading || !selectedImage}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
               {isLoading && (
                 <div className="flex flex-col items-center justify-center space-y-2 py-8 min-h-[200px]">
                   <LoadingSpinner size={32} />
